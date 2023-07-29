@@ -5,6 +5,48 @@ import requests
 import os 
 from anthropic import Anthropic, HUMAN_PROMPT, AI_PROMPT
 from dotenv import load_dotenv
+import re
+import tinycss2
+import cssbeautifier
+
+
+def format_css(css_content):
+    opts = cssbeautifier.default_options()
+    opts.indent_size = 1  # Number of spaces for each indentation
+    formatted_css = cssbeautifier.beautify(css_content, opts)
+    return formatted_css
+
+def should_keep_rule(rule, desired_properties):
+    # Check if the rule is an @media rule, and if so, discard it
+    if isinstance(rule, tinycss2.ast.AtRule) and rule.lower_at_keyword in ['media', 'font-face']:
+        return False
+
+    # If the rule is not a QualifiedRule (doesn't have selectors and content), 
+    # keep it by default, as it might be another type of at-rule or a comment.
+    if not isinstance(rule, tinycss2.ast.QualifiedRule):
+        return True
+    
+    # Parse the declarations inside the rule
+    declarations = tinycss2.parse_declaration_list(rule.content)
+    
+    for declaration in declarations:
+        # If any of the desired properties are found in the declarations, keep the rule
+        if isinstance(declaration, tinycss2.ast.Declaration) and declaration.lower_name in desired_properties:
+            return True
+            
+    return False
+
+def filter_css_by_properties(css_content, desired_properties):
+    parsed_rules = tinycss2.parse_stylesheet(css_content)
+    
+    # Convert property names to lowercase for consistent comparisons
+    desired_properties = [prop.lower() for prop in desired_properties]
+    
+    # Filter the rules
+    cleaned_rules = [rule for rule in parsed_rules if should_keep_rule(rule, desired_properties)]
+    
+    return tinycss2.serialize(cleaned_rules)
+
 
 # Load the .env file
 load_dotenv()
@@ -14,7 +56,7 @@ anthropic_api_key = os.environ.get("ANTHROPIC_API_KEY")
 
 print(anthropic_api_key) 
 
-url = "https://www.anthropic.com/"
+url = "https://arc.net/"
 
 anthropic = Anthropic(
     # defaults to os.environ.get("ANTHROPIC_API_KEY")
@@ -41,6 +83,14 @@ soup = bs(page_source, "html.parser")
 
 # get the CSS files
 css_files = []
+
+for css in soup.find_all("link"):
+    if css.attrs.get("href"):
+        # if the link tag has the 'href' attribute
+        css_url = urljoin(url, css.attrs.get("href"))
+        # check if url ends in .css
+        if '.css' in css_url:
+            css_files.append(css_url)
 
 
 def list_and_delete_files(directory_path):
@@ -70,18 +120,23 @@ def list_and_delete_files(directory_path):
 
 list_and_delete_files("./llm_input")
 
+
+print("LENGTH before CULL is: ", len(soup.prettify('utf-8')))
+# Tags to be removed
+tags_to_remove = ['script', 'path', 'noscript', 'g', 'meta', 'clippath', 'svg', 'link', 'br', 'source', 'video', 'img']
+
+# Find and remove the specified tags and their contents
+for tag_name in tags_to_remove:
+    for tag in soup.find_all(tag_name):
+        tag.decompose()  # Removes the tag from the soup
+
 # Save the HTML to a file
 with open('llm_input/website.html', 'wb') as file:
-    body_tag = soup.find("body")
-    file.write(body_tag.prettify('utf-8'))
+    # body_tag = soup.find("body")
+    file.write(soup.prettify('utf-8'))
 
-for css in soup.find_all("link"):
-    if css.attrs.get("href"):
-        # if the link tag has the 'href' attribute
-        css_url = urljoin(url, css.attrs.get("href"))
-        # check if url ends in .css
-        if '.css' in css_url:
-            css_files.append(css_url)
+print("LENGTH AFTER CULL is: ", len(soup.prettify('utf-8')))
+
 print("Total CSS files in the page:", len(css_files))
 
 def download_css_from_url(url, filename): 
@@ -104,6 +159,12 @@ with open("css_files.txt", "w") as f:
         if ("http" in css_file):
             download_css_from_url(css_file, filename=f"llm_input/css_file_{index}.css")
 
+def remove_media_selectors(css_content):
+    # This regex pattern finds all @media blocks in the CSS
+    pattern = r'@media[^{]+\{([\s\S]+?\})\}'
+    # Use re.sub to replace all @media blocks with an empty string
+    return re.sub(pattern, '', css_content)
+
 def read_and_append_files(folder_path):
     # The files we want to look for
     files_to_check = ["website.html"]
@@ -121,60 +182,71 @@ def read_and_append_files(folder_path):
 
         # Check if the file exists
         if os.path.exists(file_path):
+            css_content = "" 
+
             with open(file_path, 'r', encoding='utf-8') as file:
 
-                content_str += file.read() + "\n"
+                css_content = file.read()
+
+                # Remove all @media selectors
+                cleaned_css = remove_media_selectors(css_content)
+
+                if ".css" in file_path:
+                    desired_properties = ['color', 'fontsize', 'backgroundcolor', 'borderradius']
+                    print("LENGTH OF CSS BEFORE CLEANING is: ", len(cleaned_css))
+                    cleaned_css = filter_css_by_properties(css_content, desired_properties)
+                    print("LENGTH OF CSS AFTER CLEANING is: ", len(cleaned_css))
+                    
+                    cleaned_css = format_css(cleaned_css)
+
+                    content_str +=  f"This is an additional style sheet not included in the original HTML but referenced: \n <style>{cleaned_css}</style>" + "\n"
+                else:
+                    content_str += f"HTML: {cleaned_css}" + "\n"
+
+            # Write the cleaned CSS back to the file (or to a new file if preferred)
+            with open(file_path, 'w') as f:
+                f.write(cleaned_css)
 
     return content_str
 
 HTML_CSS_STRING = read_and_append_files("./llm_input")
 
 
-PROMPT = """
-You are helping to determine the style of a website based on its HTML and CSS. 
+PROMPT = f"""
 
-This will be used to style a new component that is being added. 
+I am going to give you some code and I want you to extract some style values for me. 
 
-Your goal is to determine values for the following variable keys, the output values of which are in standard CSS. 
+{HTML_CSS_STRING}
 
-VARIABLE	DESCRIPTION
-fontFamily	The font family used throughout Elements. Elements supports custom fonts by passing the fonts option to the Elements group.
-fontSizeBase	The font size that’s set on the root of the Element. By default, other font size variables like fontSizeXs or fontSizeSm are scaled from this value using rem units.
-spacingUnit	The base spacing unit that all other spacing is derived from. Increase or decrease this value to make your layout more or less spacious.
-borderRadius	The border radius used for tabs, inputs, and other components in the Element.
-colorPrimary	A primary color used throughout the Element. Set this to your primary brand color.
-colorBackground	The color used for the background of inputs, tabs, and other components in the Element.
-colorText	The default text color used in the Element.
-colorDanger	A color used to indicate errors or destructive actions in the Element.
+I want you to extract the following style values from the code above.
 
-Please output ONLY a JSON object with the following keys and values: 
+KEY	                 DESCRIPTION
+background-color     The main background color of the page
+text-color	         The color of the text
+card-color	         Background color of the card elements in the page
+card-border-radius   The border radius of the card elements in the page
+button-color	     The color of the buttons on the page
+button-border-radius The border radius of the buttons on the page
 
-{
-fontFamily: VALUE, 
-fontSizeBase: VALUE, 
-spacingUnit: VALUE, 
-borderRadius: VALUE, 
-colorPrimary: VALUE, 
-colorBackground: VALUE, 
-colorText: VALUE, 
-colorDanger: VALUE,
-componentBackgroundColor: VALUE (the background of the entire page we're adding)
-componentButtonColor: VALUE  (a button on the webpage we're adding)
-buttonRadius: VALUE (the radius of the button)
-}
+Please output ONLY a JSON object with the following keys and values and NOTHING more. 
+Here is an example of the output specification. 
 
-If you can't determine a value for a key, OMIT that key in the output JSON. I am appending the HTML and CSS files directly below. 
+{{
+    background-color: #hex (example), 
+    text-color: #hex (example), 
+    card-color: #hex (example), 
+    card-border-radius: px (example),
+    button-color: #hex (example), 
+    button-border-radius: px (example),
+}}
 
-We have to choose a background color for the component and a button color. Also provide a JSON file with your suggestions based on the HTML and CSS for these two. 
-
-The output set of these values should only be present in the CSS file. 
+Do not hallucinate any values for the variables, only use values found in the code given.
 """
 
-
-PROMPT += HTML_CSS_STRING[:4*70000]
-
-
 print("querying claude 2...")
+
+with open("input_prompt.txt", "w") as f:
+    f.write(PROMPT)
 
 output_json = query_claude_2(f"{HUMAN_PROMPT} {PROMPT} {AI_PROMPT}")
 
