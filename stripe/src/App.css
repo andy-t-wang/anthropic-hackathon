@@ -11,7 +11,6 @@ body {
   justify-content: center;
   align-content: center;
   height: 100vh;
-  background-color: #f0f0eb;
   width: 100vw;
 }
 
@@ -19,11 +18,8 @@ form {
   width: 80vw;
   min-width: 500px;
   align-self: center;
-
-  border-radius: 24px;
   padding: 40px;
   margin: 5px;
-  background-color: #ffffff;
 }
 
 #payment-message {
@@ -40,10 +36,9 @@ form {
 
 /* Buttons and links */
 button {
-  background: #191919;
   font-family: Arial, sans-serif;
-  color: #ffffff;
-  border-radius: 16px;
+  font-weight: 600;
+  color: #fff;
   border: 0;
   padding: 18px 32px 19px;
   font-size: 16px;

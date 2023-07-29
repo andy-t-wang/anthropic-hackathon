@@ -10,8 +10,13 @@ import tinycss2
 import cssbeautifier
 from flask import Flask, request, jsonify
 import json
+from flask_cors import CORS, cross_origin  # comment this on deployment
 
 app = Flask(__name__)
+
+
+app.config['CORS_HEADERS'] = 'Content-Type'
+CORS(app)
 
 
 @app.route('/post_endpoint', methods=['POST'])
@@ -38,14 +43,13 @@ def post_example():
             # check if url ends in .css
             if '.css' in css_url:
                 css_files.append(css_url)
-    
-    list_and_delete_files("./llm_input")
 
+    list_and_delete_files("./llm_input")
 
     print("LENGTH before CULL is: ", len(soup.prettify('utf-8')))
     # Tags to be removed
     tags_to_remove = ['script', 'path', 'noscript', 'g', 'meta',
-                    'clippath', 'svg', 'link', 'br', 'source', 'video', 'img']
+                      'clippath', 'svg', 'link', 'br', 'source', 'video', 'img']
 
     # Find and remove the specified tags and their contents
     for tag_name in tags_to_remove:
@@ -67,9 +71,8 @@ def post_example():
             if ("http" in css_file):
                 download_css_from_url(
                     css_file, filename=f"llm_input/css_file_{index}.css")
-                    
-    HTML_CSS_STRING = read_and_append_files("./llm_input")
 
+    HTML_CSS_STRING = read_and_append_files("./llm_input")
 
     PROMPT = f"""
 
@@ -119,11 +122,30 @@ def post_example():
         json_content = '{' + json_match.group(1) + '}'
         # Parse the JSON content to get a Python dictionary
         parsed_json = json.loads(json_content)
+
+        css = f"""
+            body {{
+            background-color: {parsed_json['background-color']};
+            color: {parsed_json['text-color']};
+            }}
+
+            form {{
+            background-color: {parsed_json['card-color']};
+            border-radius: {parsed_json['card-border-radius']};
+            }}
+
+            button {{
+            background-color: {parsed_json['button-color']};
+            border-radius: {parsed_json['button-border-radius']};
+            }}
+        """
+        with open("stripe/public/temp.css", "w") as css_file:
+            css_file.write(css)
+
         return jsonify({"output_json": parsed_json}), 404
     else:
         print("JSON content not found in the provided string.")
         return jsonify({"output_json": output_json}), 404
-
 
 
 def format_css(css_content):
@@ -216,6 +238,7 @@ def list_and_delete_files(directory_path):
             except Exception as e:
                 print(f"Error deleting {file_path}. Reason: {e}")
 
+
 def download_css_from_url(url, filename):
     # Sending a GET request to the URL
     response = requests.get(url)
@@ -305,9 +328,8 @@ if __name__ == "__main__":
     #         # check if url ends in .css
     #         if '.css' in css_url:
     #             css_files.append(css_url)
-    
-    # list_and_delete_files("./llm_input")
 
+    # list_and_delete_files("./llm_input")
 
     # print("LENGTH before CULL is: ", len(soup.prettify('utf-8')))
     # # Tags to be removed
@@ -334,13 +356,12 @@ if __name__ == "__main__":
     #         if ("http" in css_file):
     #             download_css_from_url(
     #                 css_file, filename=f"llm_input/css_file_{index}.css")
-                    
-    # HTML_CSS_STRING = read_and_append_files("./llm_input")
 
+    # HTML_CSS_STRING = read_and_append_files("./llm_input")
 
     # PROMPT = f"""
 
-    # I am going to give you some code and I want you to extract some style values for me. 
+    # I am going to give you some code and I want you to extract some style values for me.
 
     # {HTML_CSS_STRING}
 
@@ -354,15 +375,15 @@ if __name__ == "__main__":
     # button-color	     The color of the buttons on the page
     # button-border-radius The border radius of the buttons on the page
 
-    # Please output ONLY a JSON object with the following keys and values and NOTHING more. 
-    # Here is an example of the output specification. 
+    # Please output ONLY a JSON object with the following keys and values and NOTHING more.
+    # Here is an example of the output specification.
 
     # {{
-    #     background-color: #hex (example), 
-    #     text-color: #hex (example), 
-    #     card-color: #hex (example), 
+    #     background-color: #hex (example),
+    #     text-color: #hex (example),
+    #     card-color: #hex (example),
     #     card-border-radius: px (example),
-    #     button-color: #hex (example), 
+    #     button-color: #hex (example),
     #     button-border-radius: px (example),
     # }}
 

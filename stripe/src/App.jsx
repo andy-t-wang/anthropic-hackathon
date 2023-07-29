@@ -44,8 +44,21 @@ export default function App() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log(url);
+    console.log("1");
+    await getCSSFile();
+  };
+
+  const getCSSFile = async () => {
     console.log("here");
+    const response = await fetch("http://127.0.0.1:5000/post_endpoint", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ url: url }),
+    });
+    const data = await response.json();
+    console.log(data);
   };
 
   return (
@@ -57,7 +70,9 @@ export default function App() {
           type="text"
           onChange={(e) => setUrl(e.currentTarget.value)}
         />
-        <button type="submit">Submit</button>
+        <button type="submit" onSubmit={handleSubmit}>
+          Submit
+        </button>
       </form>
       {clientSecret && (
         <Elements options={options} stripe={stripePromise}>
