@@ -1,7 +1,12 @@
 
             body {
+<<<<<<< Updated upstream
             background-color: #000000;
             color: #ffffff;
+=======
+            background-color: #011627;
+            color: #d6deeb;
+>>>>>>> Stashed changes
             }
 
             form {
@@ -10,7 +15,12 @@
             }
 
             button {
+<<<<<<< Updated upstream
             background-color: #ffffff;
             border-radius: 8px;
+=======
+            background-color: #DD6B20;
+            border-radius: 0px;
+>>>>>>> Stashed changes
             }
         

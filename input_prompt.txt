@@ -1,8 +1,13 @@
 
 
-    I am going to give you some code and I want you to extract some style values for me. 
+    I am going to give you source code for a webpage and I want you to extract some element style values for me. 
 
+<<<<<<< Updated upstream
     HTML: <html class="scroll-smooth" lang="en-US" style="--vh:8.62px;">
+=======
+    Here is the code: 
+    HTML: <html data-theme="light" lang="en" style="color-scheme: light;">
+>>>>>>> Stashed changes
  <head>
   <title>
    OpenAI
@@ -13,6 +18,7 @@
    <!--[-->
    <div aria-hidden="true" class="fixed inset-0" data-document-bg="" style="background: linear-gradient(rgb(0, 0, 0) 50%, rgb(255, 255, 255) 50%);">
    </div>
+<<<<<<< Updated upstream
    <div class="relative bg-[color:var(--gray-000)]">
     <!--[-->
     <div class="simple-transition">
@@ -1243,6 +1249,16 @@
     <!--]-->
    </div>
    <!--]-->
+=======
+   <span hidden="" id="__chakra_env">
+   </span>
+  </div>
+  <next-route-announcer>
+   <p aria-live="assertive" id="__next-route-announcer__" role="alert" style="border: 0px; clip: rect(0px, 0px, 0px, 0px); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; white-space: nowrap; overflow-wrap: normal;">
+   </p>
+  </next-route-announcer>
+  <div class="chakra-portal">
+>>>>>>> Stashed changes
   </div>
  </body>
 </html>
@@ -3111,8 +3127,7 @@ This is an additional style sheet not included in the original HTML but referenc
  <style></style>
 
 
-    I want you to extract the following style values from the code above.
-
+    Now give me the following style values from the code above. I've included the name of the key and the description of the value I want you to extract.
     KEY	                 DESCRIPTION
     background-color     The background color of the hero section
     text-color	         The color of the text
@@ -3122,7 +3137,7 @@ This is an additional style sheet not included in the original HTML but referenc
     button-border-radius The border radius of the buttons on the page
 
     Please output ONLY a JSON object with the following keys and values and NOTHING more. 
-    Here is an example of the output specification. 
+    Here is an example of the JSON output specification. 
 
     {
         background-color: #hex (example), 

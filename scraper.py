@@ -76,30 +76,34 @@ def post_example():
 
     PROMPT = f"""
 
-    I am going to give you some code and I want you to extract some style values for me. 
+    I am going to give you source code for a webpage and I want you to extract some element style values for me. 
 
+    Here is the code: 
     {HTML_CSS_STRING}
 
-    I want you to extract the following style values from the code above.
-
+    Now give me the following style values from the code above. I've included the name of the key and the description of the value I want you to extract.
     KEY	                 DESCRIPTION
     background-color     The background color of the hero section
     text-color	         The color of the text
-    card-color	         Background color of the card elements in the page
-    card-border-radius   The border radius of the card elements in the page
-    button-color	     The color of the buttons on the page
-    button-border-radius The border radius of the buttons on the page
+    card-color	         Background color of the card elements
+    card-border-radius   The border radius of the card elements 
+    card-text-color      The color of the text on the card elements
+    button-color	     The color of the buttons
+    button-border-radius The border radius of the buttons
+    button-text-color    The color of the text on the buttons
 
     Please output ONLY a JSON object with the following keys and values and NOTHING more. 
-    Here is an example of the output specification. 
+    Here is an example of the JSON output specification. 
 
     {{
         background-color: #hex (example), 
         text-color: #hex (example), 
         card-color: #hex (example), 
         card-border-radius: px (example),
+        card-text-color: #hex (example),
         button-color: #hex (example), 
         button-border-radius: px (example),
+        button-text-color: #hex (example)
     }}
 
     Do not hallucinate any values for the variables, only use values found in the code given.
@@ -132,11 +136,13 @@ def post_example():
             form {{
             background-color: {parsed_json['card-color']};
             border-radius: {parsed_json['card-border-radius']};
+            color: {parsed_json['card-text-color']};
             }}
 
             button {{
             background-color: {parsed_json['button-color']};
             border-radius: {parsed_json['button-border-radius']};
+            color: {parsed_json['button-text-color']};
             }}
         """
         with open("stripe/public/temp.css", "w") as css_file:
