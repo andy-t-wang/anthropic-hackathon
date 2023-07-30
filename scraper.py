@@ -107,7 +107,7 @@ def post_example():
     button-border-radius   The border radius of the buttons
     button-text-color      The color of the text on the buttons
 
-    Note: 
+    Note: In most cases the first item in the list of colors provided is the hero background color
     Please output ONLY a JSON object with the following keys and values and NOTHING more. 
     Here is an example of the JSON output specification. If there is a gradient for the background value use the gradient
 
