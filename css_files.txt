@@ -1,3 +1,7 @@
-https://www.trychroma.com/_next/static/css/2e692dd9dc759ef8.css
-https://www.trychroma.com/_next/static/css/2e692dd9dc759ef8.css
-https://embed.lu.ma/checkout-button.css
+https://openai.com/_nuxt/entry.37cb622c.css
+https://openai.com/_nuxt/Footer.ebb2b2c9.css
+https://openai.com/_nuxt/BlockMath.3377d0a7.css
+https://openai.com/_nuxt/entry.37cb622c.css
+https://openai.com/_nuxt/Footer.ebb2b2c9.css
+https://openai.com/_nuxt/BlockMath.3377d0a7.css
+https://openai.com/_nuxt/Detail.befef1e5.css

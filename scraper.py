@@ -49,7 +49,7 @@ def post_example():
     print("LENGTH before CULL is: ", len(soup.prettify('utf-8')))
     # Tags to be removed
     tags_to_remove = ['script', 'path', 'noscript', 'g', 'meta',
-                      'clippath', 'svg', 'link', 'br', 'source', 'video', 'img']
+                      'clippath', 'svg', 'link', 'br', 'source', 'video', 'img', "li", "ul", "h1", "h2", "h3", "h4"]
 
     # Find and remove the specified tags and their contents
     for tag_name in tags_to_remove:
