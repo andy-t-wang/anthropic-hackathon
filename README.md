@@ -2,9 +2,9 @@
 
 LLM-powered automatic styling for white-label SAAS products.
 
-https://github.com/andy-t-wang/anthropic-hackathon/assets/41224501/afbd3b4b-519d-4396-a354-a8b828e9e571
+https://github.com/andy-t-wang/anthropic-hackathon/assets/41224501/f5a4f33b-8144-4d16-89e2-6886e5e2fd84
 
-Youtube Link: https://youtu.be/vmj_HVbRTCY
+Youtube Link: [https://youtu.be/vmj_HVbRTCY](https://youtu.be/8KAmyBrwr5Q)
 
 ## Inspiration
 Homogeneous styling is often a deal breaker for many companies purchasing white-label products. Engineers end up spending a ton of time iterating on style requests from customers. As the customer base grows, ad-hoc styling for each implementation becomes extremely time-consuming and tedious. Using LLMs we are able to automate much of the work and generate style sheets by parsing the customer's webpage code. 
