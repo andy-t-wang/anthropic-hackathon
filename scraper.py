@@ -43,6 +43,7 @@ def post_example():
             # check if url ends in .css
             if '.css' in css_url:
                 css_files.append(css_url)
+                print(css_url)
 
     list_and_delete_files("./llm_input")
 
@@ -67,7 +68,6 @@ def post_example():
 
     with open("css_files.txt", "w") as f:
         for index, css_file in enumerate(css_files):
-            print(css_file, file=f)
             if ("http" in css_file):
                 download_css_from_url(
                     css_file, filename=f"llm_input/css_file_{index}.css")
@@ -129,18 +129,18 @@ def post_example():
 
         css = f"""
             body {{
-            background-color: {parsed_json['background-color']};
+            background: {parsed_json['background-color']};
             color: {parsed_json['text-color']};
             }}
 
             form {{
-            background-color: {parsed_json['card-color']};
+            background: {parsed_json['card-color']};
             border-radius: {parsed_json['card-border-radius']};
             color: {parsed_json['card-text-color']};
             }}
 
             button {{
-            background-color: {parsed_json['button-color']};
+            background: {parsed_json['button-color']};
             border-radius: {parsed_json['button-border-radius']};
             color: {parsed_json['button-text-color']};
             }}
@@ -295,7 +295,7 @@ def read_and_append_files(folder_path):
 
                 if ".css" in file_path:
                     desired_properties = [
-                        'color', 'fontsize', 'backgroundcolor', 'borderradius']
+                        'color', 'fontsize', 'backgroundcolor', 'borderradius', 'background']
                     print("LENGTH OF CSS BEFORE CLEANING is: ", len(cleaned_css))
                     cleaned_css = filter_css_by_properties(
                         css_content, desired_properties)
@@ -303,7 +303,7 @@ def read_and_append_files(folder_path):
 
                     cleaned_css = format_css(cleaned_css)
 
-                    content_str += f"This is an additional style sheet not included in the original HTML but referenced: \n <style>{cleaned_css}</style>" + "\n"
+                    content_str += f" <style>{cleaned_css}</style>" + "\n"
                 else:
                     content_str += f"HTML: {cleaned_css}" + "\n"
 

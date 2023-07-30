@@ -1,0 +1,39 @@
+.cl-post-body code {
+ font-family: SFMono-Regular, Menlo, Consolas, PT Mono, Liberation Mono, Courier, monospace;
+ line-height: normal;
+ background: hsla(44, 6%, 50%, .15);
+ color: #eb5757;
+ border-radius: 3px;
+ font-size: 85% !important;
+ padding: .2em .4em
+}
+
+.cl-post-body a {
+ color: #0070f3;
+ text-decoration: none
+}
+
+.backdrop:after {
+ content: "";
+ position: fixed;
+ left: 0;
+ top: 0;
+ background: url(/noise.jpg);
+ width: 100vw;
+ height: 100vh;
+ opacity: .12;
+ pointer-events: none
+}
+
+.glassEffect {
+ background: rgba(0, 0, 0, .28);
+ border-radius: 16px;
+ box-shadow: 0 4px 30px rgba(0, 0, 0, .1);
+ backdrop-filter: blur(10px);
+ -webkit-backdrop-filter: blur(0);
+ border: 1px solid hsla(0, 0%, 100%, .28)
+}
+
+.forNow {
+ background: linear-gradient(180deg, #323e36 0, #39443d 8.1%, #4a534d 15.5%, #5f6561 22.5%, #747976 29%, #898c8a 35.3%, #9d9f9d 41.2%, #afb1b0 47.1%, #c0c2c1 52.9%, #cfd1d0 58.8%, #dddedd 64.7%, #e9e9e9 71%, #f2f2f2 77.5%, #f9f9f9 84.5%, #fdfdfd 91.9%, #fff)
+}
