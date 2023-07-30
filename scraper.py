@@ -213,8 +213,9 @@ anthropic = Anthropic(
 def query_claude_2(prompt):
     completion = anthropic.completions.create(
         model="claude-2",
-        max_tokens_to_sample=100000,
+        max_tokens_to_sample=1000,
         prompt=f"{prompt}",
+        temperature=0
     )
     print(completion.completion)
     return completion.completion

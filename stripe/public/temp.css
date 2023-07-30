@@ -1,18 +1,18 @@
 
             body {
-            background: #011627;
-            color: #d6deeb;
+            background: #f0f0eb;
+            color: #191919;
             }
 
             form {
-            background: #fafafa;
-            border-radius: 5px;
-            color: #2d3748;
+            background: #fff;
+            border-radius: 24px;
+            color: #191919;
             }
 
             button {
-            background: #0070f3;
-            border-radius: 100px;
-            color: #fff;
+            background: #191919;
+            border-radius: 16px;
+            color: #fafaf7;
             }
         
