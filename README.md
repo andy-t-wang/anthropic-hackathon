@@ -1,9 +1,10 @@
-# anthropic-hackathon
+# Anthropic-hackathon
 
 LLM-powered automatic styling for white-label SAAS products.
 
-https://youtu.be/vmj_HVbRTCY
+https://github.com/andy-t-wang/anthropic-hackathon/assets/41224501/afbd3b4b-519d-4396-a354-a8b828e9e571
 
+Youtube Link: https://youtu.be/vmj_HVbRTCY
 
 ## Inspiration
 Styling is often a deal breaker for many companies purchasing white-label products. As the customer base grows, ad-hoc styling for each implementation becomes extremely time-consuming and tedious. Using LLMs we are able to automate much of the work and generate style sheets by parsing the customer's webpage code. 
