@@ -1,3 +1,7 @@
+from flask_cors import CORS
+from PIL import Image
+import numpy as np
+from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
 from bs4 import BeautifulSoup as bs
 from urllib.parse import urljoin
@@ -11,12 +15,15 @@ import cssbeautifier
 from flask import Flask, request, jsonify
 import json
 from flask_cors import CORS, cross_origin  # comment this on deployment
+import time
 
 app = Flask(__name__)
 
-
 app.config['CORS_HEADERS'] = 'Content-Type'
 CORS(app)
+imageFile = 'tmp.png'
+options = Options()
+options.add_argument("window-size=1600,900")
 
 
 @app.route('/post_endpoint', methods=['POST'])
@@ -26,9 +33,12 @@ def post_example():
 
     url = data['url']
 
-    driver = webdriver.Chrome()
+    driver = webdriver.Chrome(options=options)
     driver.get(url)
+    time.sleep(2)
+    driver.get_screenshot_as_file(imageFile)
     page_source = driver.page_source
+    colors = get_colors(url)
 
     # parse HTML using beautiful soup
     soup = bs(page_source, "html.parser")
@@ -77,22 +87,29 @@ def post_example():
     PROMPT = f"""
     I am going to give you source code for a webpage and I want you to extract the style elements of some values for me.
 
-    Code to Use:
+    These are the main colors in the page for reference (Ordered by most frequent to least frequent).  The colors you return should be in the colors list below.
+    {colors}
+
+    Webpage HTML/CSS Code:
     {HTML_CSS_STRING}
 
-    Now give me the following style values from the code above. I've included the name of the key and the description of the value I want you to extract.
-    KEY	                 DESCRIPTION
-    hero-background-color The background color of ONLY the first hero section
-    hero-text-color	     The color of the text in the first hero section
-    card-color	         Background color of the card elements 
-    card-border-radius    The border radius of the card elements
-    card-text-color       The color of the text on the card elements 
-    button-color	     The color of the buttons
-    button-border-radius The border radius of the buttons
-    button-text-color    The color of the text on the buttons
+    
 
+    Now extract following style values from the code above. I've included the name of the key and the description of the value I want you to extract.
+    
+    KEY	                   DESCRIPTION
+    hero-background-color  The background color of ONLY the first hero section
+    hero-text-color	       The color of the text in the first hero section
+    card-color	           Background color of the card elements 
+    card-border-radius     The border radius of the card elements
+    card-text-color        The color of the text on the card elements 
+    button-color	       The color of the buttons
+    button-border-radius   The border radius of the buttons
+    button-text-color      The color of the text on the buttons
+
+    Note: 
     Please output ONLY a JSON object with the following keys and values and NOTHING more. 
-    Here is an example of the JSON output specification. 
+    Here is an example of the JSON output specification. If there is a gradient for the background value use the gradient
 
     {{
         hero-background-color: #hex (example), 
@@ -211,7 +228,7 @@ anthropic = Anthropic(
 def query_claude_2(prompt):
     completion = anthropic.completions.create(
         model="claude-2",
-        max_tokens_to_sample=1000,
+        max_tokens_to_sample=256,
         prompt=f"{prompt}",
         temperature=0
     )
@@ -313,97 +330,43 @@ def read_and_append_files(folder_path):
     return content_str
 
 
+#####
+
+
+def palette(img):
+    """
+    Return palette in descending order of frequency
+    """
+    arr = np.asarray(img)
+    palette, index = np.unique(asvoid(arr).ravel(), return_inverse=True)
+    palette = palette.view(arr.dtype).reshape(-1, arr.shape[-1])
+    count = np.bincount(index)
+    order = np.argsort(count)
+    return palette[order[::-1]]
+
+
+def asvoid(arr):
+
+    arr = np.ascontiguousarray(arr)
+    return arr.view(np.dtype((np.void, arr.dtype.itemsize * arr.shape[-1])))
+
+
+def convertToHex(rgb):
+    return '#%02x%02x%02x' % rgb
+
+
+def get_colors(url):
+    # savePrint(imageFile, url)
+    img = Image.open(imageFile, 'r').convert('RGB')
+    top_ten_colors = palette(img)[:10]
+    # print(top_ten_colors)
+    colors = [convertToHex(tuple(top_ten_colors[i]))
+              for i in range(min(10, len(top_ten_colors)))]
+    print(colors)
+    return colors
+
+
+####
 if __name__ == "__main__":
-    # url = "https://www.anthropic.com/"
-
-    # driver = webdriver.Chrome()
-    # driver.get(url)
-    # page_source = driver.page_source
-
-    # # parse HTML using beautiful soup
-    # soup = bs(page_source, "html.parser")
-
-    # # get the CSS files
-    # css_files = []
-
-    # for css in soup.find_all("link"):
-    #     if css.attrs.get("href"):
-    #         # if the link tag has the 'href' attribute
-    #         css_url = urljoin(url, css.attrs.get("href"))
-    #         # check if url ends in .css
-    #         if '.css' in css_url:
-    #             css_files.append(css_url)
-
-    # list_and_delete_files("./llm_input")
-
-    # print("LENGTH before CULL is: ", len(soup.prettify('utf-8')))
-    # # Tags to be removed
-    # tags_to_remove = ['script', 'path', 'noscript', 'g', 'meta',
-    #                 'clippath', 'svg', 'link', 'br', 'source', 'video', 'img']
-
-    # # Find and remove the specified tags and their contents
-    # for tag_name in tags_to_remove:
-    #     for tag in soup.find_all(tag_name):
-    #         tag.decompose()  # Removes the tag from the soup
-
-    # # Save the HTML to a file
-    # with open('llm_input/website.html', 'wb') as file:
-    #     # body_tag = soup.find("body")
-    #     file.write(soup.prettify('utf-8'))
-
-    # print("LENGTH AFTER CULL is: ", len(soup.prettify('utf-8')))
-
-    # print("Total CSS files in the page:", len(css_files))
-
-    # with open("css_files.txt", "w") as f:
-    #     for index, css_file in enumerate(css_files):
-    #         print(css_file, file=f)
-    #         if ("http" in css_file):
-    #             download_css_from_url(
-    #                 css_file, filename=f"llm_input/css_file_{index}.css")
-
-    # HTML_CSS_STRING = read_and_append_files("./llm_input")
-
-    # PROMPT = f"""
-
-    # I am going to give you some code and I want you to extract some style values for me.
-
-    # {HTML_CSS_STRING}
-
-    # I want you to extract the following style values from the code above.
-
-    # KEY	                 DESCRIPTION
-    # background-color     The background color of the hero section
-    # text-color	         The color of the text
-    # card-color	         Background color of the card elements in the page
-    # card-border-radius   The border radius of the card elements in the page
-    # button-color	     The color of the buttons on the page
-    # button-border-radius The border radius of the buttons on the page
-
-    # Please output ONLY a JSON object with the following keys and values and NOTHING more.
-    # Here is an example of the output specification.
-
-    # {{
-    #     background-color: #hex (example),
-    #     text-color: #hex (example),
-    #     card-color: #hex (example),
-    #     card-border-radius: px (example),
-    #     button-color: #hex (example),
-    #     button-border-radius: px (example),
-    # }}
-
-    # Do not hallucinate any values for the variables, only use values found in the code given.
-    # Only output the JSON as a string. Such that we could use json.loads on your output and get a dictionary.
-    # """
-
-    # print("querying claude 2...")
-
-    # with open("input_prompt.txt", "w") as f:
-    #     f.write(PROMPT)
-
-    # output_json = query_claude_2(f"{HUMAN_PROMPT} {PROMPT} {AI_PROMPT}")
-
-    # print("done")
-    # print("output json is: ", output_json)
 
     app.run(debug=True)

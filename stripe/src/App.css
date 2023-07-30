@@ -129,12 +129,13 @@ button:disabled {
 }
 
 .textInput {
-  width: 95%;
+  width: 98.1%;
   height: 20px;
   border-radius: 5px;
   border: 1px solid #ccc;
   padding: 10px;
   margin-bottom: 10px;
+  display: block;
 }
 
 .Label {
