@@ -75,19 +75,18 @@ def post_example():
     HTML_CSS_STRING = read_and_append_files("./llm_input")
 
     PROMPT = f"""
+    I am going to give you source code for a webpage and I want you to extract the style elements of some values for me.
 
-    I am going to give you source code for a webpage and I want you to extract some element style values for me. 
-
-    Here is the code: 
+    Code to Use:
     {HTML_CSS_STRING}
 
     Now give me the following style values from the code above. I've included the name of the key and the description of the value I want you to extract.
     KEY	                 DESCRIPTION
-    background-color     The background color of the hero section
-    text-color	         The color of the text
-    card-color	         Background color of the card elements
-    card-border-radius   The border radius of the card elements 
-    card-text-color      The color of the text on the card elements
+    hero-background-color The background color of ONLY the first hero section
+    hero-text-color	     The color of the text in the first hero section
+    card-color	         Background color of the card elements 
+    card-border-radius    The border radius of the card elements
+    card-text-color       The color of the text on the card elements 
     button-color	     The color of the buttons
     button-border-radius The border radius of the buttons
     button-text-color    The color of the text on the buttons
@@ -96,7 +95,7 @@ def post_example():
     Here is an example of the JSON output specification. 
 
     {{
-        background-color: #hex (example), 
+        hero-background-color: #hex (example), 
         text-color: #hex (example), 
         card-color: #hex (example), 
         card-border-radius: px (example),
@@ -106,11 +105,10 @@ def post_example():
         button-text-color: #hex (example)
     }}
 
-    Do not hallucinate any values for the variables, only use values found in the code given.
+    Only return values found in the code provided.
     Only output the JSON as a string. Such that we could use json.loads on your output and get a dictionary.
-
     {{
-    """
+"""
 
     print("querying claude 2...")
 
@@ -129,8 +127,8 @@ def post_example():
 
         css = f"""
             body {{
-            background: {parsed_json['background-color']};
-            color: {parsed_json['text-color']};
+            background: {parsed_json['hero-background-color']};
+            color: {parsed_json['hero-text-color']};
             }}
 
             form {{
@@ -304,9 +302,9 @@ def read_and_append_files(folder_path):
 
                     cleaned_css = format_css(cleaned_css)
 
-                    content_str += f" <style>{cleaned_css}</style>" + "\n"
+                    content_str += f"CSS File: \n{cleaned_css}" + "\n"
                 else:
-                    content_str += f"HTML: {cleaned_css}" + "\n"
+                    content_str += f"HTML File: \n{cleaned_css}" + "\n"
 
             # Write the cleaned CSS back to the file (or to a new file if preferred)
             with open(file_path, 'w') as f:

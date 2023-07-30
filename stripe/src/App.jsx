@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
+import ClipLoader from "react-spinners/ClipLoader";
 
 import CheckoutForm from "./CheckoutForm";
 import "./App.css";
@@ -15,8 +16,18 @@ const stripePromise = loadStripe("pk_test_TYooMQauvdEDq54NiTphI7jx");
 export default function App() {
   const [clientSecret, setClientSecret] = useState("");
   const [url, setUrl] = useState("");
+  let [loading, setLoading] = useState(false);
+
+  const [textcolor, setBodyFontColor] = useState("#000000");
   useEffect(() => {
     // Create PaymentIntent as soon as the page loads
+    const getBodyFontColor = () => {
+      const styles = window.getComputedStyle(document.forms[0]);
+      const fontColor = styles.getPropertyValue("color");
+      setBodyFontColor(fontColor);
+    };
+
+    getBodyFontColor();
     fetch("/create-payment-intent", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -31,10 +42,12 @@ export default function App() {
     variables: {
       fontFamily: "Styrene B LC, sans-serif",
       fontSizeBase: "16px",
-      colorPrimary: "#191919",
-      colorBackground: "#FFFFFF",
-      colorText: "#191919",
-      colorDanger: "#BF4D43",
+      colorPrimary: "#fff",
+    },
+    rules: {
+      ".Label": {
+        color: textcolor,
+      },
     },
   };
   const options = {
@@ -49,7 +62,7 @@ export default function App() {
   };
 
   const getCSSFile = async () => {
-    console.log("here");
+    setLoading(true);
     const response = await fetch("http://127.0.0.1:5000/post_endpoint", {
       method: "POST",
       headers: {
@@ -58,7 +71,7 @@ export default function App() {
       body: JSON.stringify({ url: url }),
     });
     const data = await response.json();
-    console.log(data);
+    setLoading(false);
   };
 
   return (
@@ -74,11 +87,28 @@ export default function App() {
           Submit
         </button>
       </form>
+
       {clientSecret && (
         <Elements options={options} stripe={stripePromise}>
           <CheckoutForm />
         </Elements>
       )}
+      <div
+        style={{
+          width: "100%",
+          alignItems: "center",
+          display: "flex",
+          justifyContent: "center",
+        }}
+      >
+        <ClipLoader
+          color={"black"}
+          loading={loading}
+          size={50}
+          aria-label="Loading Spinner"
+          data-testid="loader"
+        />
+      </div>
     </div>
   );
 }

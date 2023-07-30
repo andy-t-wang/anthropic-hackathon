@@ -136,3 +136,7 @@ button:disabled {
   padding: 10px;
   margin-bottom: 10px;
 }
+
+.Label {
+  color: white;
+}
